@@ -56,20 +56,17 @@ def parsetext(text):
 	tokens = word_tokenize(stripped_text)
 	tags = pos_tag(tokens)
 	match = re.findall(pattern,text)
-
+	dict["fieldToSearch"] = []
 	for (a,b) in tags:
-		if b == 'NN' or b == 'NNP':
+		if b == 'NN' or a =='gross':
 			keywords.append(a)
 		if b == 'NNP':
 			dict["companyname"] = a
 		if a == 'first' or a == 'second' or a == 'third' or a == 'fourth':
 			dict["financialquarter"] = quarters[a]
-		if a =='debt':
-			dict["fieldToSearch"] = a
-		elif a =='growth':
-			dict["fieldToSearch"] = a
-		elif a =="profit":
-			dict["fieldToSearch"] = a
+			
+	for a in keywords:
+		dict["fieldToSearch"].append(a)
 
 	if match:		
 		for a in match:
@@ -78,17 +75,25 @@ def parsetext(text):
 			else:
 				dict["date"] = a 
 				
-	
-			
+	print (dict)
 	return dict
 	
+	
+	#if a =='debt':
+	#		dict["fieldToSearch"] = a
+	#	elif a =='growth':
+	#		dict["fieldToSearch"] = a
+	#	elif a =="profit":
+	#		dict["fieldToSearch"] = a
+	
+	
 
 
-chatInput = "What is the grossprofit of Apple"
+chatInput = "What is the gross profit of AAPL"
 dict = parsetext(chatInput)
 company = dict["companyname"]
 #resp = requests.get('http://edgaronline.api.mashery.com/v2/corefinancials/ann?primarysymbols=MSFT&appkey=5kb2erymmv7s5ne6ksqkxt2v')
-resp = requests.get('http://edgaronline.api.mashery.com/v2/corefinancials/qtr?companyname=' + company +  '&numperiods=1&appkey=5kb2erymmv7s5ne6ksqkxt2v')
+resp = requests.get('http://edgaronline.api.mashery.com/v2/corefinancials/qtr?primarysymbols=' + company +  '&numperiods=1&appkey=5kb2erymmv7s5ne6ksqkxt2v')
 #resp = requests.get('http://edgaronline.api.mashery.com/v2/companies?companynames=*micro*&limit=10&offset=10&sortby=companyName%20asc&appkey=5kb2erymmv7s5ne6ksqkxt2v')
 #5kb2erymmv7s5ne6ksqkxt2v
 #resp = requests.get('http://edgaronline.api.mashery.com/v2/insiders/summary?fields=issueid,insiderformtype,numTransactions,sumnumTransactions&filter=sumnumTransactions%20gt%201%20AND%20issueid%20eq%20467297&appkey=5kb2erymmv7s5ne6ksqkxt2v')
@@ -101,6 +106,9 @@ resp = requests.get('http://edgaronline.api.mashery.com/v2/corefinancials/qtr?co
 #print('Created task. ID: {}'.format(resp.json()["grossprofit"]))
  #
 
+DictConv = {'profit': 'grossprofit'}
+
+ 
 fq = ""
 d1 = ""
 d2 = ""
@@ -111,9 +119,10 @@ fieldToSearch = dict["fieldToSearch"] #"grossprofit"
 #growth rate
 #print((resp.json()["result"]["rows"][0]["values"][24]))
 rows = (resp.json()["result"]["rows"][0]["values"])
-for row in rows:
-	if row["field"] == fieldToSearch:
-		print(row["value"])
+for n in fieldToSearch:
+	for row in rows:
+		if (n in DictConv) and (row["field"] == DictConv[n]):
+			print(row["value"])
 
 
 
